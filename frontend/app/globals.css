@@ -18,6 +18,23 @@
   --shadow: 0 10px 34px rgba(26, 54, 38, 0.07);
 }
 
+:root[data-theme="dark"] {
+  --canvas: #101814;
+  --surface: #17221c;
+  --surface-soft: #1e2c24;
+  --ink: #eef5ef;
+  --muted: #9eafa5;
+  --line: #304238;
+  --primary: #68ac84;
+  --gis: #72b47d;
+  --ai: #80a7e2;
+  --chain: #af93d8;
+  --input: #e0ad5b;
+  --output: #70c2bb;
+  --danger: #db8b7d;
+  --shadow: 0 10px 34px rgba(0, 0, 0, 0.18);
+}
+
 * { box-sizing: border-box; }
 html { min-width: 320px; }
 body {
