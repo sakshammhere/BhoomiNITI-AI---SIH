@@ -50,3 +50,17 @@ button { cursor: pointer; }
 .display { font-family: "Fraunces", Georgia, serif; }
 .mono { font-family: "IBM Plex Mono", monospace; }
 
+@keyframes pulse-hotspot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(169, 83, 70, .32); }
+  50% { box-shadow: 0 0 0 11px rgba(169, 83, 70, 0); }
+}
+.hotspot-pulse { animation: pulse-hotspot 2.6s ease-out infinite; }
+
+.leaflet-container { background: #dfe9e4; font-family: "IBM Plex Sans", sans-serif; }
+.leaflet-control-zoom a { background: var(--surface) !important; color: var(--ink) !important; border-color: var(--line) !important; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--ink); }
+.leaflet-popup-content { margin: 12px 14px; }
+
+@media (max-width: 767px) {
+  .leaflet-control-zoom { display: none; }
+}

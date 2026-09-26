@@ -1,0 +1,55 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowDownRight, ArrowUpRight, CalendarRange, Download, Layers3, MapPin, RefreshCw } from "lucide-react";
+import { getLandChange, type DistrictKey, type LandChangeResponse, type LandClass } from "@/lib/api";
+import { Metric, PageIntro, SectionLabel, StatusBadge, Surface } from "./ui";
+import SatelliteCompare from "./SatelliteCompare";
+
+const IndiaMap = dynamic(() => import("./IndiaMap"), { ssr: false, loading: () => <div className="flex h-full min-h-[380px] items-center justify-center bg-[#e5eee8] text-xs text-[#4e5c55]">Loading map layer…</div> });
+const landClasses: LandClass[] = ["Agriculture", "Built-up", "Forest", "Water Body", "Other"];
+const districtOptions: Array<{ id: DistrictKey; name: string; state: string }> = [
+  { id: "gurugram", name: "Gurugram", state: "Haryana" },
+  { id: "bengaluru", name: "Bengaluru Urban", state: "Karnataka" },
+  { id: "south-24-parganas", name: "South 24 Parganas", state: "West Bengal" }
+];
+const classColors: Record<LandClass, string> = { Agriculture: "#B8791A", "Built-up": "#A95346", Forest: "#3E7A4C", "Water Body": "#2A5EA8", Other: "#87958C" };
+
+export default function LandIntelligence() {
+  const [district, setDistrict] = useState<DistrictKey>("gurugram");
+  const [yearFrom, setYearFrom] = useState(2005);
+  const [yearTo, setYearTo] = useState(2022);
+  const [data, setData] = useState<LandChangeResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  async function load() { setLoading(true); setData(await getLandChange({ district, yearFrom, yearTo })); setLoading(false); }
+  useEffect(() => { void load(); }, [district, yearFrom, yearTo]);
+  const topChange = useMemo(() => data?.hotspots[0], [data]);
+
+  if (!data) return <div className="py-20 text-sm text-[var(--muted)]">Loading land intelligence…</div>;
+  return <div>
+    <PageIntro eyebrow="A · GIS change engine / interactive map dashboard" title="Land intelligence" description="Detect where land use changed, quantify the transition, and open the underlying hotspot evidence." action={<button onClick={load} className="flex items-center gap-2 border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)]"><RefreshCw size={15} className={loading ? "animate-spin" : ""} />Refresh layer</button>} />
+    <div className="mb-5 grid gap-3 border border-[var(--line)] bg-[var(--surface)] p-3 md:grid-cols-[1.3fr_1fr_1fr_auto]">
+      <label className="flex items-center gap-3 border border-[var(--line)] bg-[var(--canvas)] px-3 py-2"><MapPin size={16} className="text-[var(--gis)]" /><span className="min-w-0 flex-1"><span className="mono block text-[9px] uppercase tracking-[.14em] text-[var(--muted)]">District</span><select value={district} onChange={(e) => setDistrict(e.target.value as DistrictKey)} className="mt-1 w-full bg-transparent text-sm font-semibold outline-none"><option value="gurugram">Gurugram · Haryana</option><option value="bengaluru">Bengaluru Urban · Karnataka</option><option value="south-24-parganas">South 24 Parganas · West Bengal</option></select></span></label>
+      <label className="flex items-center gap-3 border border-[var(--line)] bg-[var(--canvas)] px-3 py-2"><CalendarRange size={16} className="text-[var(--input)]" /><span className="min-w-0 flex-1"><span className="mono block text-[9px] uppercase tracking-[.14em] text-[var(--muted)]">Compare from</span><select value={yearFrom} onChange={(e) => setYearFrom(Number(e.target.value))} className="mt-1 w-full bg-transparent text-sm font-semibold outline-none"><option>2005</option><option>2010</option><option>2015</option></select></span></label>
+      <label className="flex items-center gap-3 border border-[var(--line)] bg-[var(--canvas)] px-3 py-2"><CalendarRange size={16} className="text-[var(--input)]" /><span className="min-w-0 flex-1"><span className="mono block text-[9px] uppercase tracking-[.14em] text-[var(--muted)]">Compare to</span><select value={yearTo} onChange={(e) => setYearTo(Number(e.target.value))} className="mt-1 w-full bg-transparent text-sm font-semibold outline-none"><option>2022</option><option>2023</option><option>2024</option></select></span></label>
+      <button className="flex items-center justify-center gap-2 bg-[var(--primary)] px-5 py-3 text-xs font-semibold text-white"><Layers3 size={15} />Layers</button>
+    </div>
+
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,.75fr)]">
+      <Surface className="overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] px-5 py-4"><div><SectionLabel color="var(--gis)">Change surface / {data.districtName}</SectionLabel><div className="mt-1 text-xs text-[var(--muted)]">{data.yearFrom} baseline → {data.yearTo} observed layer · {data.source}</div></div><div className="flex items-center gap-1.5 text-[10px] text-[var(--muted)]"><span className="h-2 w-2 rounded-full bg-[#A95346]" />{data.hotspots.length} hotspots detected</div></div>
+        <div className="relative h-[390px] bg-[#dfe9e4]"><IndiaMap center={data.center} zoom={data.zoom} hotspots={data.hotspots} /><div className="absolute bottom-4 left-4 z-[500] border border-[var(--line)] bg-[var(--surface)]/95 p-3 shadow-sm"><div className="mono mb-2 text-[9px] uppercase tracking-[.12em] text-[var(--muted)]">Land-use class</div><div className="grid grid-cols-2 gap-x-4 gap-y-2">{landClasses.map((item) => <span key={item} className="flex items-center gap-2 text-[10px] text-[var(--muted)]"><span className="h-2.5 w-2.5" style={{ backgroundColor: classColors[item] }} />{item}</span>)}</div></div></div>
+        <SatelliteCompare center={data.center} zoom={data.zoom} hotspots={data.hotspots} yearFrom={data.yearFrom} yearTo={data.yearTo} />
+        <div className="grid grid-cols-2 border-t border-[var(--line)] sm:grid-cols-4"><div className="border-r border-[var(--line)] p-4"><div className="mono text-[9px] uppercase text-[var(--muted)]">Changed area</div><div className="mt-1 text-xl font-semibold">{data.changedAreaHa.toLocaleString()} ha</div></div><div className="border-r border-[var(--line)] p-4"><div className="mono text-[9px] uppercase text-[var(--muted)]">District share</div><div className="mt-1 text-xl font-semibold">{data.changePercent}%</div></div><div className="border-r border-[var(--line)] p-4"><div className="mono text-[9px] uppercase text-[var(--muted)]">Top signal</div><div className="mt-1 truncate text-sm font-semibold">{topChange?.classFrom} → {topChange?.classTo}</div></div><div className="p-4"><div className="mono text-[9px] uppercase text-[var(--muted)]">Layer health</div><div className="mt-1"><StatusBadge>Verified input</StatusBadge></div></div></div>
+      </Surface>
+      <div className="space-y-5"><div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2"><Metric label="Total district area" value={`${(data.totalAreaHa / 1000).toFixed(1)}k ha`} detail="reference boundary" accent="var(--gis)" /><Metric label="Hotspots" value={String(data.hotspots.length)} detail="above 85% confidence" accent="var(--danger)" /><Metric label="Observation span" value={`${data.yearTo - data.yearFrom} yrs`} detail={`${data.yearFrom} → ${data.yearTo}`} accent="var(--input)" /><Metric label="Data confidence" value="94.1%" detail="classifier median" accent="var(--ai)" /></div><Surface className="p-5"><SectionLabel color="var(--danger)">Detected hotspots</SectionLabel><div className="mt-3 divide-y divide-[var(--line)]">{data.hotspots.map((hotspot, index) => <div key={hotspot.id} className="flex gap-3 py-3 first:pt-0 last:pb-0"><div className="hotspot-pulse mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--danger)]" /><div className="min-w-0"><div className="text-sm font-semibold">{hotspot.name}</div><div className="mt-1 text-xs text-[var(--muted)]">{hotspot.change} · {hotspot.areaHa.toLocaleString()} ha</div><div className="mt-2 flex items-center gap-3 text-[10px]"><span className="mono text-[var(--muted)]">0{index + 1} / {hotspot.confidence}% confidence</span><span className="text-[var(--primary)]">Open evidence →</span></div></div></div>)}</div></Surface></div>
+    </div>
+
+    <div className="mt-5 grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
+      <Surface className="overflow-x-auto"><div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4"><div><SectionLabel color="var(--gis)">Transition matrix</SectionLabel><div className="mt-1 text-xs text-[var(--muted)]">Area in hectares · row = {data.yearFrom} class, column = {data.yearTo} class</div></div><button className="text-[var(--muted)]"><Download size={16} /></button></div><table className="w-full min-w-[610px] text-left text-xs"><thead><tr className="border-b border-[var(--line)] text-[10px] uppercase tracking-[.08em] text-[var(--muted)]"><th className="px-5 py-3 font-medium">From \ To</th>{landClasses.map((item) => <th key={item} className="px-3 py-3 font-medium">{item}</th>)}</tr></thead><tbody>{landClasses.map((row) => <tr key={row} className="border-b border-[var(--line)] last:border-0"><td className="px-5 py-3 font-semibold">{row}</td>{landClasses.map((col) => <td key={col} className={`px-3 py-3 mono ${row === col ? "font-semibold text-[var(--gis)]" : "text-[var(--muted)]"}`}>{data.matrix[row][col].toLocaleString()}</td>)}</tr>)}</tbody></table></Surface>
+      <Surface className="p-5"><div className="flex items-center justify-between"><div><SectionLabel color="var(--input)">Class area movement</SectionLabel><div className="mt-1 text-xs text-[var(--muted)]">District hectares by observed class</div></div><span className="mono text-[10px] text-[var(--muted)]">{data.yearFrom} / {data.yearTo}</span></div><div className="mt-5 space-y-4">{data.classStats.map((item) => <div key={item.label}><div className="mb-1.5 flex items-center justify-between text-xs"><span className="flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5" style={{ backgroundColor: item.color }} />{item.label}</span><span className={`mono flex items-center gap-1 ${item.delta > 0 ? "text-[var(--danger)]" : "text-[var(--gis)]"}`}>{item.delta > 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}{Math.abs(item.delta).toLocaleString()} ha</span></div><div className="flex h-2 gap-1"><div className="h-full bg-[var(--line)]" style={{ width: `${Math.max(4, (item.from / 120000) * 100)}%` }} /><div className="h-full" style={{ width: `${Math.max(4, (item.to / 120000) * 100)}%`, backgroundColor: item.color }} /></div><div className="mt-1 flex justify-between text-[10px] text-[var(--muted)]"><span>{item.from.toLocaleString()} ha</span><span>{item.to.toLocaleString()} ha</span></div></div>)}</div></Surface>
+    </div>
+  </div>;
+}
