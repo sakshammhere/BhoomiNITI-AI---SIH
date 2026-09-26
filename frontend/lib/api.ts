@@ -210,6 +210,59 @@ const districtMeta: Record<DistrictKey, DistrictMeta> = {
   }
 };
 
+/** Derives a genuinely different, internally-consistent snapshot for any (yearFrom, yearTo) pair
+ *  from the district's real timeline — this is what makes the compare dropdowns actually change data. */
+function computeLandChange(district: DistrictKey, yearFrom: number, yearTo: number): LandChangeResponse {
+  const meta = districtMeta[district];
+  const classes: LandClass[] = ["Agriculture", "Built-up", "Forest", "Water Body", "Other"];
+
+  const classStats = classes.map((label) => {
+    const from = meta.timeline[label][yearFrom] ?? meta.timeline[label][2005];
+    const to = meta.timeline[label][yearTo] ?? meta.timeline[label][2022];
+    return { label, from, to, delta: to - from, color: colors[label] };
+  });
+
+  // scale each matrix row by how this class's *selected* starting year compares to its 2005 baseline,
+  // so the transition matrix reflects the chosen span rather than always showing the 2005→2022 numbers
+  const matrix = {} as Record<LandClass, Record<LandClass, number>>;
+  const scaleFactors: Record<LandClass, number> = {} as Record<LandClass, number>;
+  for (const row of classes) {
+    const base2005 = meta.timeline[row][2005];
+    const fromValue = meta.timeline[row][yearFrom] ?? base2005;
+    const scale = base2005 ? fromValue / base2005 : 1;
+    scaleFactors[row] = scale;
+    matrix[row] = {} as Record<LandClass, number>;
+    for (const col of classes) matrix[row][col] = Math.max(0, Math.round(meta.matrixShape[row][col] * scale));
+  }
+
+  const changedAreaHa = classes.reduce((sum, row) => sum + classes.reduce((rowSum, col) => rowSum + (col === row ? 0 : matrix[row][col]), 0), 0);
+  const totalClassified = classes.reduce((sum, row) => sum + classes.reduce((rowSum, col) => rowSum + matrix[row][col], 0), 0) || 1;
+  const changePercent = Math.round((changedAreaHa / totalClassified) * 1000) / 10;
+
+  const hotspots: Hotspot[] = meta.hotspotsBase.map((h) => {
+    const scale = scaleFactors[h.classFrom] ?? 1;
+    const areaHa = Math.max(10, Math.round((h.areaHa * scale) / 10) * 10);
+    return { ...h, areaHa };
+  });
+
+  return {
+    district,
+    districtName: meta.districtName,
+    state: meta.state,
+    yearFrom,
+    yearTo,
+    totalAreaHa: meta.totalAreaHa,
+    changedAreaHa,
+    changePercent,
+    matrix,
+    classStats,
+    hotspots,
+    center: meta.center,
+    zoom: meta.zoom,
+    source: meta.source
+  };
+}
+
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
@@ -230,5 +283,17 @@ export async function createSession(payload: { role: Role; apiKey?: string }): P
   } catch {
     return { token: `demo-session-${payload.role}`, role: payload.role, apiKeyConnected: Boolean(payload.apiKey), expiresAt: "31 Aug 2026 · 20:49 IST" };
   }
+}
+
+export async function getLandChange(params: { district: DistrictKey; yearFrom: number; yearTo: number }): Promise<LandChangeResponse> {
+  try {
+    return await request<LandChangeResponse>(`/api/land-change?district=${params.district}&yearFrom=${params.yearFrom}&yearTo=${params.yearTo}`);
+  } catch {
+    return computeLandChange(params.district, params.yearFrom, params.yearTo);
+  }
+}
+
+export function getDistrictSourceUrl(district: DistrictKey): string {
+  return districtMeta[district].sourceUrl;
 }
 
