@@ -271,6 +271,18 @@ const evidenceSources: EvidenceSource[] = [
   { id: "src-wetlands", title: "Wetlands (Conservation and Management) Rules", type: "Guideline", date: "2017", pages: "Rule 4", snippet: "Prohibited activities include reclamation, setting up industries, and permanent construction within notified wetland areas." }
 ];
 
+/** Publicly verifiable sources this MVP is built on — shown on the Data & Sources page.
+ *  Only root/landing URLs we can vouch for are linked; the two demo-corpus documents above
+ *  without a `url` are indicative citations, not yet linked to a verified public page. */
+const references: ReferenceEntry[] = [
+  { category: "Real GIS data", title: "ISRO Bhuvan — Land Use / Land Cover", publisher: "NRSC / ISRO", url: "https://bhuvan.nrsc.gov.in/", usage: "Multi-temporal LULC layers used for land-use change detection." },
+  { category: "Real government data", title: "Open Government Data Platform India", publisher: "data.gov.in", url: "https://www.data.gov.in/", usage: "State/UT and district-level land-use statistics for contextual grounding." },
+  { category: "Land governance", title: "Digital India Land Records Modernization Programme (DILRMP)", publisher: "Department of Land Resources, MoRD", url: "https://dolr.gov.in/", usage: "Policy foundation for the digital land-record and evidence corpus." },
+  { category: "Spatial database", title: "PostGIS — Spatial extension for PostgreSQL", publisher: "PostGIS Project", url: "https://postgis.net/", usage: "Stores district boundaries, LULC geometries, and change results." },
+  { category: "Vector search", title: "pgvector — vector similarity search for Postgres", publisher: "pgvector (open source)", url: "https://github.com/pgvector/pgvector", usage: "Semantic retrieval for the Evidence RAG engine." },
+  { category: "Blockchain / provenance", title: "Blockchain-based provenance research", publisher: "ScienceDirect", url: "https://www.sciencedirect.com/science/article/pii/S1195103624000260", usage: "Design basis for tamper-evident dataset provenance and integrity verification." }
+];
+
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
@@ -303,6 +315,10 @@ export async function getLandChange(params: { district: DistrictKey; yearFrom: n
 
 export function getDistrictSourceUrl(district: DistrictKey): string {
   return districtMeta[district].sourceUrl;
+}
+
+export async function getReferences(): Promise<ReferenceEntry[]> {
+  return clone(references);
 }
 
 export async function searchEvidence(q: string): Promise<EvidenceResponse> {
