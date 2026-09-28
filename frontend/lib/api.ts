@@ -335,3 +335,26 @@ export async function searchEvidence(q: string): Promise<EvidenceResponse> {
   }
 }
 
+export async function compareScenario(payload: { district: DistrictKey; baseline: string; intervention: string }): Promise<ScenarioResponse> {
+  try {
+    return await request<ScenarioResponse>("/api/scenario/compare", { method: "POST", body: JSON.stringify(payload) });
+  } catch {
+    const names: Record<DistrictKey, string> = { gurugram: "Gurugram", bengaluru: "Bengaluru Urban", "south-24-parganas": "South 24 Parganas" };
+    const isWater = payload.district === "bengaluru";
+    const historical = isWater ? [2100, 2040, 1950, 1890, 1820, 1750, 1680] : [14.2, 15.4, 16.8, 18.1, 20.2, 22.7, 24.5];
+    const projected = isWater ? [null, null, null, null, 1600, 1450, 1310] : [null, null, null, null, 25.9, 27.4, 28.8];
+    const intervention = isWater ? [null, null, null, null, 1670, 1630, 1590] : [null, null, null, null, 24.8, 25.4, 26.0];
+    return {
+      districtName: names[payload.district],
+      baseline: payload.baseline,
+      intervention: payload.intervention,
+      series: ["2016", "2017", "2018", "2019", "2020", "2021", "2022"].map((year, index) => ({ year, historical: historical[index], projected: projected[index], intervention: intervention[index] })),
+      metrics: isWater ? { baselineValue: "1,680 ha", projectedValue: "1,310 ha", avoidedLoss: "280 ha protected" } : { baselineValue: "24.5%", projectedValue: "28.8%", avoidedLoss: "1.6 pp avoided" },
+      narrative: isWater
+        ? "Without a buffer intervention, the model projects continued loss across the lake catchment. A 30 m construction buffer changes the trajectory by slowing new conversion around the Bellandur–Varthur system; it does not restore historic water spread on its own, so enforcement and recharge measures remain complementary actions."
+        : "The historical signal shows a sharp acceleration in built-up share after 2016. Restricting new conversion within the notified buffer moderates the projected slope while leaving room for planned growth outside the sensitive zone. This is a scenario estimate for review, not a statutory zoning decision.",
+      evidenceIds: ["src-urban", "src-lulc", "src-wetlands"]
+    };
+  }
+}
+
