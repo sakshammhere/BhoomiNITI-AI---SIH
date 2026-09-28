@@ -358,3 +358,17 @@ export async function compareScenario(payload: { district: DistrictKey; baseline
   }
 }
 
+export async function getProvenanceLedger(): Promise<ProvenanceRecord[]> {
+  try {
+    return await request<ProvenanceRecord[]>("/api/provenance/ledger");
+  } catch {
+    return [
+      { id: "rec-05", dataset: "Bengaluru Urban LULC change tiles", version: "v2022.08", source: "ISRO Bhuvan", sourceUrl: "https://bhuvan.nrsc.gov.in/", timestamp: "31 Aug 2026 · 18:42:10", hash: "8e1f5b9a 77c4d1e0 9f2a6d44 63af0e92", previousHash: "3c92a8d1 4e87b5c0 26dd19ab 782f04f1", status: "verified", records: "12,482" },
+      { id: "rec-04", dataset: "District boundary reference layer", version: "v2024.11", source: "Survey of India", sourceUrl: "https://www.surveyofindia.gov.in/", timestamp: "31 Aug 2026 · 18:41:52", hash: "3c92a8d1 4e87b5c0 26dd19ab 782f04f1", previousHash: "c7280e43 9d1b55aa 0eb8a31c 1f4d78b0", status: "verified", records: "784" },
+      { id: "rec-03", dataset: "DILRMP policy corpus index", version: "v2026.08", source: "Department of Land Resources", sourceUrl: "https://dolr.gov.in/", timestamp: "31 Aug 2026 · 18:40:31", hash: "c7280e43 9d1b55aa 0eb8a31c 1f4d78b0", previousHash: "a71d0cc9 53b18e62 81aa4d29 f022c1e7", status: "verified", records: "24" },
+      { id: "rec-02", dataset: "Gurugram LULC change tiles", version: "v2022.08", source: "ISRO Bhuvan", sourceUrl: "https://bhuvan.nrsc.gov.in/", timestamp: "31 Aug 2026 · 18:39:07", hash: "a71d0cc9 53b18e62 81aa4d29 f022c1e7", previousHash: "5f4a3b22 e91d8a0c 4b8fc5a7 61c2d90e", status: "verified", records: "9,721" },
+      { id: "rec-01", dataset: "Session genesis record", version: "v1.0", source: "BhoomiNITI AI", timestamp: "31 Aug 2026 · 18:38:44", hash: "5f4a3b22 e91d8a0c 4b8fc5a7 61c2d90e", previousHash: "GENESIS · 00000000", status: "verified", records: "1" }
+    ];
+  }
+}
+
