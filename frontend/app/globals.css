@@ -56,6 +56,12 @@ button { cursor: pointer; }
 }
 .hotspot-pulse { animation: pulse-hotspot 2.6s ease-out infinite; }
 
+@keyframes draw-in {
+  from { stroke-dashoffset: 1000; opacity: 0; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+.chart-draw { animation: draw-in 1.2s ease-out both; }
+
 .leaflet-container { background: #dfe9e4; font-family: "IBM Plex Sans", sans-serif; }
 .leaflet-control-zoom a { background: var(--surface) !important; color: var(--ink) !important; border-color: var(--line) !important; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--ink); }
