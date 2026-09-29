@@ -372,3 +372,10 @@ export async function getProvenanceLedger(): Promise<ProvenanceRecord[]> {
   }
 }
 
+export async function generateReport(sessionSummary: Record<string, unknown>): Promise<ReportResponse> {
+  try {
+    return await request<ReportResponse>("/api/reports/generate", { method: "POST", body: JSON.stringify({ sessionSummary }) });
+  } catch {
+    return { downloadUrl: "#demo-report", reportId: "BN-2026-0831-014", generatedAt: "31 Aug 2026 · 18:49 IST" };
+  }
+}

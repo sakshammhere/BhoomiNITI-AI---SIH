@@ -1,0 +1,137 @@
+# Replit build prompt — BhoomiNITI AI frontend
+
+Paste everything below into the Replit Agent. Attach a screenshot of `docs/architecture-diagram.html` (or the published artifact) alongside it for visual context.
+
+---
+
+## Context
+
+You are building the frontend for **BhoomiNITI AI**, a secure AI + GIS + blockchain-backed provenance platform for evidence-based land governance, built for Smart India Hackathon 2026 (Problem Statement SIH26019, Ministry of Rural Development — Department of Land Resources, theme: Blockchain & Cybersecurity). Team name: PlotArmor.
+
+An architecture diagram is attached — treat it as the source of truth for the system's structure (four engines: GIS Change, Evidence RAG, Policy Scenario, Blockchain Provenance; one FastAPI layer; five outputs). The screens below map directly onto it.
+
+The platform lets government officials, researchers, and the public: detect real land-use change over time (agriculture → built-up, forest loss, water-body change), search a policy/research document corpus with source-cited AI answers, compare historical trends against proposed policy interventions, and verify that every dataset is tamper-evident via a hash-chain provenance ledger.
+
+**This is frontend-only.** A FastAPI backend is being built separately and will be connected later via a base URL. Build every screen against a typed API client with realistic mock data so the UI is fully demoable on its own, and swapping in the real backend later requires touching only the client, not the components.
+
+## Tech requirements
+
+- **Next.js** (App Router), **TypeScript**, **Tailwind CSS**.
+- Map layer: **react-leaflet** (Leaflet) for the GIS views.
+- Charts: **Recharts** for trend/comparison visualizations.
+- Fully **responsive** — must work well on desktop (primary, used for the live demo) and on mobile/tablet.
+- No Docker, no backend logic, no database — this app only calls a REST API through `NEXT_PUBLIC_API_BASE_URL`.
+- Single unified app shell with **role-gated sections** — not three separate apps. A logged-in Public/Researcher/Government user sees the same shell with different nav items and permissions visible.
+
+## The bar this needs to clear
+
+This has to win a national hackathon selection round. Judges will see dozens of AI-assisted submissions in a row — most will look like a generic admin-dashboard template with placeholder numbers. This one needs to look like a real product a government department would actually deploy: specific, data-dense, confident, and clearly built by people who understand land governance, not just people who prompted an AI. Every screen should hold up if a judge clicks around unscripted for two minutes, not just in a fixed demo path.
+
+## Visual identity — be deliberate, not generic
+
+This is a government-grade decision-support platform, not a SaaS dashboard template.
+
+**Explicitly avoid these AI-generated-design tells** — they are exactly what makes a submission look templated:
+- Purple-to-blue gradient hero sections
+- Warm cream background with a serif-display + terracotta-accent combo (a different, well-considered cliché — don't reach for it either)
+- Inter or Space Grotesk used as "the safe default" with no real pairing thought
+- `rounded-lg`-on-everything card soup with no hierarchy
+- Emoji used as section markers or icons
+- Everything centered, generic accent-bar-on-the-left cards
+- Numbered "01 / 02 / 03" markers on content that isn't actually a sequence
+- Stock dashboard layout: sidebar + 4 KPI cards + one line chart + one table, repeated on every page
+
+Instead, take cues from how real geospatial/ops platforms present dense information: ISRO Bhuvan, Mapbox Studio, Palantir Gotham-style operational dashboards, India Stack/DigiLocker's institutional restraint. Confident use of a map as a first-class UI element, real data density, typographic hierarchy that does work (not just size changes), and restrained, purposeful motion (a hotspot pulsing gently on the map when detected, a chart line drawing in when data loads, a hash-chain link animating into place) — not gratuitous animation everywhere.
+
+Reuse this exact palette (already used in the project's architecture diagram, for consistency across the pitch):
+
+| Role | Color |
+|---|---|
+| Background (light) | `#F3F7F4` |
+| Surface / card | `#FFFFFF` |
+| Ink (text) | `#16211C` |
+| Muted ink | `#4E5C55` |
+| Primary accent (land/brand green) | `#2F6E52` |
+| GIS / deterministic processing | `#3E7A4C` |
+| AI / evidence / LLM | `#2A5EA8` |
+| Blockchain / provenance | `#6B4FA0` |
+| Input / data | `#B8791A` |
+| Output / reports | `#1D7A75` |
+
+Typography: pair a serif display face (e.g. **Fraunces**, weight 600) for headings — gives it institutional/policy gravitas — with **IBM Plex Sans** for UI/body text, and **IBM Plex Mono** for data-like elements (hash values, coordinates, API paths, timestamps). All three are on Google Fonts.
+
+Support both light and dark themes properly (CSS variables/tokens, not hardcoded colors per component).
+
+## Screens to build
+
+### 1. Login / Session Setup
+- Role selector: **Public**, **Researcher**, **Government** (three seeded demo accounts, e.g. `researcher@bhoominiti.demo`, `official@bhoominiti.demo`, plus open public access).
+- A settings step to **enter an LLM API key** (BYOK) — explain in one line that it's encrypted and used only for this session, never logged. Store it in memory/session only on the client side (it will later be sent to the backend to be encrypted server-side per session).
+- Clean, confidence-inspiring first impression — this is the judges' first click.
+
+### 2. App shell
+- Persistent nav (sidebar or top bar) with sections gated by role: Land Intelligence, Evidence Search, Policy Scenarios, Provenance Ledger, Reports — all visible to Researcher/Government; Public role sees a reduced set (no admin-only actions).
+- Show the current role and a subtle "session active" / key-connected indicator.
+
+### 3. Geo-Temporal Land Intelligence
+- Interactive Leaflet map of India, drill into a **district selector** and a **year-range selector** (e.g. 2005 vs 2022).
+- Land-use-class legend (Agriculture, Built-up, Forest, Water Body, Other) with distinct colors.
+- On selecting district + years: show a **transition matrix** table, **area statistics**, and highlighted **change hotspots** on the map.
+- Use realistic mock GeoJSON for 2-3 real Indian districts chosen for a genuinely dramatic, well-known land-use story — not generic "District A/B" placeholders. Good options:
+  - **Gurugram, Haryana** — agricultural land converted to built-up/IT-corridor development, 2005→2022.
+  - **Bengaluru Urban, Karnataka** — shrinking water bodies ("vanishing lakes of Bengaluru") alongside built-up expansion.
+  - **South 24 Parganas, West Bengal (Sundarbans belt)** — mangrove/forest loss and water-body change.
+  
+  (These are placeholders for the mock data layer only — the real backend will later swap in actual Bhuvan/data.gov.in figures for whichever districts the team finalizes.)
+
+### 4. Evidence-Grounded AI Search
+- A search bar ("Ask about land policy, DILRMP, land-use regulation…").
+- Results as answer cards: a synthesized answer with **inline citation markers** linking to a source list below (document name, page/section, snippet).
+- A secondary panel listing the underlying document corpus (title, type, date).
+
+### 5. Policy Scenario Explorer
+- Controls to pick a district, a baseline period, and a **policy intervention** (e.g. "restrict built-up expansion near forest buffer by X%").
+- A trend chart (Recharts) showing historical trend vs. projected outcome under the intervention.
+- A narrative panel below the chart with a plain-language LLM explanation of the comparison, referencing supporting evidence from the search corpus.
+
+### 6. Provenance Ledger
+- A dedicated screen showing the **hash-chain**: a table or vertical timeline of dataset records — dataset name, version, source, timestamp, SHA-256 hash, previous-hash link, and a verification status badge ("✓ Verified — chain intact").
+- This is a **judge-facing showcase feature** for the Blockchain & Cybersecurity theme — make it visually convincing (monospace hash values, a clear chain/link visual between records).
+
+### 7. Reports & Downloads
+- A summary of the current session's findings (selected district, detected changes, evidence cited, scenario compared).
+- A **"Generate Decision Report"** action producing a downloadable PDF/Excel (the actual generation will be a backend call — for now, wire the button to a mock endpoint and show a realistic loading → success state).
+
+## API contract (build against this now, with mock data)
+
+Create a single typed API client (e.g. `lib/api.ts`) reading `NEXT_PUBLIC_API_BASE_URL` from env, with functions for:
+
+```
+GET  /api/land-change?district=&yearFrom=&yearTo=   → transition matrix + hotspots + map layers
+GET  /api/evidence/search?q=                          → cited answer + source list
+POST /api/scenario/compare                             → { district, baseline, intervention } → trend series + narrative
+GET  /api/provenance/ledger                            → hash-chain records
+POST /api/reports/generate                              → { sessionSummary } → { downloadUrl }
+POST /api/auth/session                                   → { role, apiKey } → session token
+```
+
+Each function should return realistic **mock data today** (typed, matching real Indian district names and plausible values) and be trivial to point at a real backend later — no component should call `fetch` directly.
+
+## Non-negotiables
+
+- No lorem ipsum, no placeholder logos, no "Lorem District" — use real Indian district names and realistic land-use figures.
+- No Docker or backend code in this Repl — frontend only.
+- Every screen must look complete and polished even before the real backend exists — this UI **is** the demo.
+- Keep the palette and type pairing consistent across every screen.
+
+## Deliverable checklist
+
+- [ ] Login/session setup with role select + BYOK key entry
+- [ ] Role-gated app shell
+- [ ] Geo-Temporal Land Intelligence map + change detection view
+- [ ] Evidence-Grounded AI Search with citations
+- [ ] Policy Scenario Explorer with chart + narrative
+- [ ] Provenance Ledger screen (hash-chain visual)
+- [ ] Reports & Downloads screen
+- [ ] Responsive on mobile/tablet
+- [ ] Light + dark theme support
