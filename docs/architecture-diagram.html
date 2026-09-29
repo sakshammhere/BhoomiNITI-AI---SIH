@@ -1,0 +1,387 @@
+<title>BhoomiNITI AI Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#F3F7F4;
+    --surface:#FFFFFF;
+    --ink:#16211C;
+    --ink-muted:#4E5C55;
+    --border:#D7E0DA;
+    --accent:#2F6E52;
+    --accent-soft:#E7F1EA;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#101613;
+      --surface:#19221D;
+      --ink:#E9F1EC;
+      --ink-muted:#A6B6AD;
+      --border:#2B3833;
+      --accent:#54B486;
+      --accent-soft:#1D2C24;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101613;
+    --surface:#19221D;
+    --ink:#E9F1EC;
+    --ink-muted:#A6B6AD;
+    --border:#2B3833;
+    --accent:#54B486;
+    --accent-soft:#1D2C24;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    margin:0;
+    padding:48px 24px 80px;
+  }
+  .page{
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 14px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(28px,4vw,42px);
+    line-height:1.12;
+    letter-spacing:-.01em;
+    margin:0 0 14px;
+    text-wrap:balance;
+  }
+  .dek{
+    font-size:16px;
+    line-height:1.55;
+    color:var(--ink-muted);
+    max-width:64ch;
+    margin:0 0 32px;
+  }
+
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 20px;
+    padding:14px 18px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:28px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--ink-muted);
+    font-weight:500;
+  }
+  .chip i{
+    width:11px;height:11px;border-radius:3px;
+    background:var(--c);
+    display:inline-block;
+    flex:none;
+  }
+
+  .diagram-card{
+    margin:0 0 36px;
+    padding:22px 22px 18px;
+    background:#FFFFFF;
+    border:1px solid #D9DED9;
+    border-radius:14px;
+    box-shadow:0 1px 2px rgba(20,30,25,.04);
+  }
+  .diagram-card svg{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  .diagram-card figcaption{
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid #E4E9E4;
+    font-size:13.5px;
+    line-height:1.6;
+    color:#4E5C55;
+    max-width:88ch;
+  }
+
+  .notes{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px 26px 26px;
+  }
+  .notes h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    margin:0 0 14px;
+  }
+  .notes ul{
+    margin:0;
+    padding-left:20px;
+    display:grid;
+    gap:9px;
+  }
+  .notes li{
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink-muted);
+  }
+  .notes li b{
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  footer.tag{
+    margin-top:34px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.04em;
+    color:var(--ink-muted);
+    opacity:.75;
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">SIH26019 · Team PlotArmor · Ministry of Rural Development — DoLR</p>
+  <h1>BhoomiNITI AI — System Architecture</h1>
+  <p class="dek">How real land-governance data becomes an evidence-backed, provenance-verified policy decision — inputs, processing engines, and outputs for the Week&nbsp;1 MVP.</p>
+
+  <section class="legend" aria-label="Diagram color key">
+    <span class="chip"><i style="--c:#B8791A"></i>Input data</span>
+    <span class="chip"><i style="--c:#5B6B66"></i>Infrastructure</span>
+    <span class="chip"><i style="--c:#3E7A4C"></i>Deterministic processing</span>
+    <span class="chip"><i style="--c:#2A5EA8"></i>AI / LLM reasoning</span>
+    <span class="chip"><i style="--c:#6B4FA0"></i>Blockchain / security</span>
+    <span class="chip"><i style="--c:#1D7A75"></i>Output</span>
+  </section>
+
+  <figure class="diagram-card">
+    <svg viewBox="0 0 1680 1180" role="img" aria-label="Architecture diagram. Three inputs — real GIS datasets, a policy and research corpus, and a user session with role and API key — flow down through data ingestion and hashing, a PostgreSQL and PostGIS storage layer, and an RBAC access gate. Below the gate, four parallel engines run: the GIS Change Engine, the Evidence RAG Engine, the Policy Scenario Engine, and the Blockchain Provenance Layer, with the Policy Scenario Engine drawing on the Evidence RAG Engine for supporting citations. All four engines report through a single FastAPI orchestration layer, which fans out to five outputs: an interactive map dashboard, an evidence search UI, a scenario comparison view, a provenance ledger screen, and a downloadable decision report. A trust and security band — role-based access, encrypted API key storage, the SHA-256 provenance chain, and local demo deployment — applies across every layer.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#48564F"/>
+        </marker>
+        <marker id="arrowSoft" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#6B4FA0"/>
+        </marker>
+        <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse">
+          <circle cx="1.2" cy="1.2" r="1.2" fill="#E4E9E4"/>
+        </pattern>
+      </defs>
+
+      <rect x="0" y="0" width="1680" height="1180" fill="#FFFFFF"/>
+      <rect x="0" y="0" width="1680" height="1180" fill="url(#grid)"/>
+
+      <!-- ===== CONNECTORS (drawn first, under boxes) ===== -->
+      <!-- inputs -> ingestion -->
+      <line x1="290" y1="160" x2="290" y2="188" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="840" y1="160" x2="840" y2="188" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1390" y1="160" x2="1390" y2="188" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- ingestion -> storage -->
+      <line x1="840" y1="270" x2="840" y2="298" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- storage -> gate -->
+      <line x1="840" y1="380" x2="840" y2="408" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- gate -> engines -->
+      <line x1="225" y1="470" x2="225" y2="498" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="635" y1="470" x2="635" y2="498" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1045" y1="470" x2="1045" y2="498" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1455" y1="470" x2="1455" y2="498" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- engines -> fastapi -->
+      <line x1="225" y1="740" x2="225" y2="778" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="635" y1="740" x2="635" y2="778" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1045" y1="740" x2="1045" y2="778" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1455" y1="740" x2="1455" y2="778" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- fastapi -> outputs -->
+      <line x1="188" y1="850" x2="188" y2="878" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="514" y1="850" x2="514" y2="878" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="840" y1="850" x2="840" y2="878" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1166" y1="850" x2="1166" y2="878" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1492" y1="850" x2="1492" y2="878" stroke="#48564F" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- B <-> C supporting-evidence link -->
+      <line x1="822" y1="620" x2="858" y2="620" stroke="#6B4FA0" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" marker-start="url(#arrowSoft)" marker-end="url(#arrowSoft)"/>
+      <text x="840" y="606" text-anchor="middle" font-size="10" fill="#6B4FA0" font-weight="600">supporting evidence</text>
+
+      <!-- ===== ROW 1 — INPUTS ===== -->
+      <g>
+        <rect x="40" y="50" width="500" height="110" rx="10" fill="#FBF1DE" stroke="#B8791A" stroke-width="2.5"/>
+        <text x="64" y="80" font-size="15" font-weight="700" fill="#16211C">REAL GIS DATASETS</text>
+        <text x="64" y="103" font-size="11.5" fill="#4E5C55">ISRO Bhuvan LULC layers · data.gov.in land-use statistics</text>
+        <text x="64" y="122" font-size="11.5" fill="#4E5C55">Multi-temporal raster &amp; vector, 2–3 districts</text>
+      </g>
+      <g>
+        <rect x="590" y="50" width="500" height="110" rx="10" fill="#FBF1DE" stroke="#B8791A" stroke-width="2.5"/>
+        <text x="614" y="80" font-size="15" font-weight="700" fill="#16211C">POLICY &amp; RESEARCH CORPUS</text>
+        <text x="614" y="103" font-size="11.5" fill="#4E5C55">DILRMP reports · DoLR policy papers · research studies</text>
+        <text x="614" y="122" font-size="11.5" fill="#4E5C55">~20–50 curated documents (PDF / text)</text>
+      </g>
+      <g>
+        <rect x="1140" y="50" width="500" height="110" rx="10" fill="#FBF1DE" stroke="#B8791A" stroke-width="2.5"/>
+        <text x="1164" y="80" font-size="15" font-weight="700" fill="#16211C">USER SESSION</text>
+        <text x="1164" y="103" font-size="11.5" fill="#4E5C55">Role login — Public / Researcher / Government</text>
+        <text x="1164" y="122" font-size="11.5" fill="#4E5C55">+ your own LLM API key, encrypted per session</text>
+      </g>
+
+      <!-- ===== ROW 2 — INGESTION ===== -->
+      <g>
+        <rect x="40" y="190" width="1600" height="80" rx="10" fill="#EEF1EF" stroke="#5B6B66" stroke-width="2"/>
+        <text x="64" y="223" font-size="15" font-weight="700" fill="#16211C">DATA INGESTION, VALIDATION &amp; HASHING</text>
+        <text x="64" y="245" font-size="11.5" fill="#4E5C55">GeoPandas / Rasterio clip &amp; reproject · quality checks · SHA-256 hash generated per dataset version</text>
+      </g>
+
+      <!-- ===== ROW 3 — STORAGE ===== -->
+      <g>
+        <rect x="40" y="300" width="1600" height="80" rx="10" fill="#EEF1EF" stroke="#5B6B66" stroke-width="2"/>
+        <text x="64" y="333" font-size="15" font-weight="700" fill="#16211C">STORAGE LAYER — PostgreSQL + PostGIS + pgvector</text>
+        <text x="64" y="355" font-size="11.5" fill="#4E5C55">District boundaries · LULC geometries · document embeddings · hash-chain ledger · metadata</text>
+      </g>
+
+      <!-- ===== ROW 4 — RBAC GATE ===== -->
+      <g>
+        <rect x="40" y="410" width="1600" height="60" rx="10" fill="#E4E9E7" stroke="#5B6B66" stroke-width="2"/>
+        <text x="64" y="437" font-size="14.5" font-weight="700" fill="#16211C">RBAC ACCESS GATE</text>
+        <text x="64" y="456" font-size="11.5" fill="#4E5C55">JWT role check — Public / Researcher / Government permissions</text>
+      </g>
+
+      <!-- ===== ROW 5 — ENGINES ===== -->
+      <!-- A: GIS Change Engine -->
+      <g>
+        <rect x="40" y="500" width="370" height="240" rx="10" fill="#E7F2E9" stroke="#3E7A4C" stroke-width="2.5"/>
+        <text x="62" y="530" font-size="14.5" font-weight="700" fill="#16211C">A · GIS CHANGE ENGINE</text>
+        <text x="62" y="552" font-size="11" fill="#4E5C55">Land-use transitions between two years</text>
+        <text x="62" y="584" font-size="10.8" fill="#3E5B44">— Transition matrix (agri → built-up,</text>
+        <text x="72" y="600" font-size="10.8" fill="#3E5B44">forest loss, water-body change)</text>
+        <text x="62" y="628" font-size="10.8" fill="#3E5B44">— Hotspot identification per district</text>
+        <text x="62" y="656" font-size="10.8" fill="#3E5B44">— Precomputed cache for demo districts;</text>
+        <text x="72" y="672" font-size="10.8" fill="#3E5B44">live compute path available</text>
+      </g>
+      <!-- B: Evidence RAG Engine -->
+      <g>
+        <rect x="450" y="500" width="370" height="240" rx="10" fill="#E6EDF8" stroke="#2A5EA8" stroke-width="2.5"/>
+        <text x="472" y="530" font-size="14.5" font-weight="700" fill="#16211C">B · EVIDENCE RAG ENGINE</text>
+        <text x="472" y="552" font-size="11" fill="#4E5C55">Source-cited answers over the corpus</text>
+        <text x="472" y="584" font-size="10.8" fill="#33507F">— pgvector semantic search across</text>
+        <text x="482" y="600" font-size="10.8" fill="#33507F">~20–50 documents</text>
+        <text x="472" y="628" font-size="10.8" fill="#33507F">— LLM answer generation using your</text>
+        <text x="482" y="644" font-size="10.8" fill="#33507F">own API key (BYOK)</text>
+        <text x="472" y="672" font-size="10.8" fill="#33507F">— Every claim links back to a source</text>
+      </g>
+      <!-- C: Policy Scenario Engine (two-tone) -->
+      <g>
+        <rect x="860" y="500" width="370" height="240" rx="10" fill="#FFFFFF" stroke="#2A5EA8" stroke-width="2.5"/>
+        <text x="882" y="528" font-size="14.5" font-weight="700" fill="#16211C">C · POLICY SCENARIO ENGINE</text>
+
+        <rect x="876" y="540" width="338" height="76" rx="7" fill="#E7F2E9" stroke="#3E7A4C" stroke-width="1.5"/>
+        <text x="894" y="562" font-size="11" font-weight="600" fill="#2E5A38">1 · Rule-based projection</text>
+        <text x="894" y="580" font-size="10.3" fill="#3E5B44">Applies assumed intervention effects</text>
+        <text x="894" y="595" font-size="10.3" fill="#3E5B44">to the historical GIS trend</text>
+
+        <line x1="1045" y1="620" x2="1045" y2="632" stroke="#48564F" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+        <rect x="876" y="636" width="338" height="88" rx="7" fill="#E6EDF8" stroke="#2A5EA8" stroke-width="1.5"/>
+        <text x="894" y="658" font-size="11" font-weight="600" fill="#2A4A78">2 · LLM narration</text>
+        <text x="894" y="676" font-size="10.3" fill="#33507F">Explains the comparison in plain</text>
+        <text x="894" y="691" font-size="10.3" fill="#33507F">language, citing evidence from B</text>
+        <text x="894" y="708" font-size="10.3" fill="#33507F">for policymakers</text>
+      </g>
+      <!-- D: Blockchain Provenance Layer -->
+      <g>
+        <rect x="1270" y="500" width="370" height="240" rx="10" fill="#EFE9F7" stroke="#6B4FA0" stroke-width="2.5"/>
+        <text x="1292" y="530" font-size="14.5" font-weight="700" fill="#16211C">D · BLOCKCHAIN PROVENANCE</text>
+        <text x="1292" y="552" font-size="11" fill="#4E5C55">Tamper-evident record per dataset</text>
+        <text x="1292" y="584" font-size="10.8" fill="#563E80">— SHA-256 hash chained to the</text>
+        <text x="1302" y="600" font-size="10.8" fill="#563E80">previous record</text>
+        <text x="1292" y="628" font-size="10.8" fill="#563E80">— Source, version &amp; timestamp</text>
+        <text x="1302" y="644" font-size="10.8" fill="#563E80">stored per entry</text>
+        <text x="1292" y="672" font-size="10.8" fill="#563E80">— Verification status feeds the</text>
+        <text x="1302" y="688" font-size="10.8" fill="#563E80">Provenance Ledger screen</text>
+      </g>
+
+      <!-- ===== ROW 6 — FASTAPI ===== -->
+      <g>
+        <rect x="40" y="780" width="1600" height="70" rx="10" fill="#E4E9E7" stroke="#5B6B66" stroke-width="2"/>
+        <text x="64" y="810" font-size="14.5" font-weight="700" fill="#16211C">FASTAPI ORCHESTRATION LAYER</text>
+        <text x="64" y="830" font-size="11.5" fill="#4E5C55">RESTful APIs for land-change data, evidence search, scenarios, provenance &amp; report generation</text>
+      </g>
+
+      <!-- ===== ROW 7 — OUTPUTS ===== -->
+      <g>
+        <rect x="40" y="880" width="296" height="110" rx="10" fill="#E1F3F1" stroke="#1D7A75" stroke-width="2.5"/>
+        <text x="60" y="908" font-size="12.5" font-weight="700" fill="#16211C">INTERACTIVE MAP</text>
+        <text x="60" y="924" font-size="12.5" font-weight="700" fill="#16211C">DASHBOARD</text>
+        <text x="60" y="947" font-size="10.3" fill="#155F5A">Multi-layer land-use view</text>
+        <text x="60" y="961" font-size="10.3" fill="#155F5A">+ change statistics</text>
+      </g>
+      <g>
+        <rect x="366" y="880" width="296" height="110" rx="10" fill="#E1F3F1" stroke="#1D7A75" stroke-width="2.5"/>
+        <text x="386" y="908" font-size="12.5" font-weight="700" fill="#16211C">EVIDENCE SEARCH UI</text>
+        <text x="386" y="931" font-size="10.3" fill="#155F5A">Cited answers over the policy</text>
+        <text x="386" y="945" font-size="10.3" fill="#155F5A">&amp; research corpus</text>
+      </g>
+      <g>
+        <rect x="692" y="880" width="296" height="110" rx="10" fill="#E1F3F1" stroke="#1D7A75" stroke-width="2.5"/>
+        <text x="712" y="908" font-size="12.5" font-weight="700" fill="#16211C">SCENARIO COMPARISON</text>
+        <text x="712" y="924" font-size="12.5" font-weight="700" fill="#16211C">VIEW</text>
+        <text x="712" y="947" font-size="10.3" fill="#155F5A">Historical trend vs proposed</text>
+        <text x="712" y="961" font-size="10.3" fill="#155F5A">policy, narrated</text>
+      </g>
+      <g>
+        <rect x="1018" y="880" width="296" height="110" rx="10" fill="#E1F3F1" stroke="#1D7A75" stroke-width="2.5"/>
+        <rect x="1018" y="880" width="5" height="110" fill="#6B4FA0"/>
+        <text x="1042" y="908" font-size="12.5" font-weight="700" fill="#16211C">PROVENANCE LEDGER</text>
+        <text x="1042" y="924" font-size="12.5" font-weight="700" fill="#16211C">SCREEN</text>
+        <text x="1042" y="947" font-size="10.3" fill="#155F5A">Hash-chain viewer + tamper-</text>
+        <text x="1042" y="961" font-size="10.3" fill="#155F5A">verification status</text>
+      </g>
+      <g>
+        <rect x="1344" y="880" width="296" height="110" rx="10" fill="#E1F3F1" stroke="#1D7A75" stroke-width="2.5"/>
+        <text x="1364" y="908" font-size="12.5" font-weight="700" fill="#16211C">DECISION REPORT</text>
+        <text x="1364" y="924" font-size="11.5" font-weight="600" fill="#155F5A">PDF / XLSX</text>
+        <text x="1364" y="947" font-size="10.3" fill="#155F5A">Downloadable evidence-</text>
+        <text x="1364" y="961" font-size="10.3" fill="#155F5A">backed report</text>
+      </g>
+
+      <!-- ===== ROW 8 — TRUST & SECURITY (cross-cutting, no flow arrows) ===== -->
+      <g>
+        <rect x="40" y="1030" width="1600" height="110" rx="10" fill="#FBFCFB" stroke="#5B6B66" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="64" y="1054" font-size="12" font-weight="700" letter-spacing="0.04em" fill="#16211C">TRUST &amp; SECURITY — applies across every layer above</text>
+        <line x1="440" y1="1068" x2="440" y2="1122" stroke="#D7DEDA" stroke-width="1.5"/>
+        <line x1="840" y1="1068" x2="840" y2="1122" stroke="#D7DEDA" stroke-width="1.5"/>
+        <line x1="1240" y1="1068" x2="1240" y2="1122" stroke="#D7DEDA" stroke-width="1.5"/>
+        <text x="240" y="1096" text-anchor="middle" font-size="11" font-weight="600" fill="#4E5C55">Role-based access control</text>
+        <text x="640" y="1096" text-anchor="middle" font-size="11" font-weight="600" fill="#4E5C55">Encrypted BYOK key storage</text>
+        <text x="1040" y="1096" text-anchor="middle" font-size="11" font-weight="600" fill="#4E5C55">SHA-256 provenance chain</text>
+        <text x="1440" y="1090" text-anchor="middle" font-size="11" font-weight="600" fill="#4E5C55">Local demo deployment</text>
+        <text x="1440" y="1104" text-anchor="middle" font-size="11" font-weight="600" fill="#4E5C55">(Docker-ready, not required)</text>
+      </g>
+    </svg>
+
+    <figcaption>Two real inputs — GIS datasets and the policy corpus — plus a role-and-key user session flow through ingestion, storage and an RBAC gate before reaching four parallel engines. The Policy Scenario Engine draws supporting citations from the Evidence RAG Engine. All four report through one FastAPI layer into five judge-facing outputs, with role-based access and the SHA-256 provenance chain applying across every layer.</figcaption>
+  </figure>
+
+  <section class="notes">
+    <h2>Week 1 build notes</h2>
+    <ul>
+      <li><b>Provenance</b> is a simulated SHA-256 hash-chain inside Postgres, not a public testnet — described honestly as a private, testnet-ready ledger, surfaced on its own Provenance Ledger screen.</li>
+      <li><b>Districts</b>: 2–3 real districts from Bhuvan / data.gov.in, chosen for the most visually dramatic land-use change.</li>
+      <li><b>LLM access</b> is bring-your-own-key, entered in-app and encrypted per session — the same pattern used in the QA-agent and Nova/SemantIQ builds.</li>
+      <li><b>Change detection</b> is precomputed and cached for the demo districts; the live GeoPandas/Rasterio path exists but isn't the critical path for the scripted demo.</li>
+      <li><b>Deployment</b> is local-only for a team-scripted live demo — Docker is skipped this week, not required.</li>
+    </ul>
+  </section>
+
+  <footer class="tag">BhoomiNITI AI · SIH 2026 · SIH26019 · Team PlotArmor</footer>
+</div>
